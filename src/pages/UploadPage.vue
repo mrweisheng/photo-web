@@ -18,18 +18,21 @@
           ref="fileInput"
           type="file"
           multiple
-          accept="image/jpeg,image/png,image/gif"
+          accept="image/*"
           class="file-input"
           @change="handleFileChange"
         >
         
         <div 
           class="upload-placeholder"
-          @click="triggerFileInput"
+          @click="openFilePicker"
         >
           <i class="fas fa-cloud-upload-alt"></i>
-          <p>点击或拖拽图片到此处上传</p>
-          <p class="upload-tip">支持 jpg、png、gif 格式，单个文件不超过5MB</p>
+          <p>点击选择图片</p>
+          <p class="upload-tip">支持 jpg、png、gif 格式，可多选，单个文件不超过5MB</p>
+          <el-button type="primary" class="select-btn">
+            选择图片
+          </el-button>
         </div>
       </div>
 
@@ -155,7 +158,7 @@ const progressText = computed(() => {
   return `正在上传第 ${uploadProgress.value}%`
 })
 
-// 格式化文件大小
+// 格式化文��大小
 const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 B'
   const k = 1024
@@ -168,7 +171,7 @@ const formatFileSize = (bytes) => {
 const handleFileChange = (event) => {
   const files = Array.from(event.target.files)
   processFiles(files)
-  event.target.value = '' // 重置 input
+  event.target.value = ''
 }
 
 // 处理拖拽
@@ -193,7 +196,7 @@ const processFiles = (files) => {
     url: URL.createObjectURL(file)
   }))
   
-  // 如果当前封面索引超出范围，重置为0
+  // 如果当前封面索引超出范围，重置0
   if (coverIndex.value >= files.length) {
     coverIndex.value = 0
   }
@@ -298,10 +301,31 @@ const handleUpload = async () => {
   }
 }
 
-// 修改触发文件选择的方法
-const triggerFileInput = () => {
+// 修改打开文件选择器的方法
+const openFilePicker = () => {
   if (!isUploading.value) {
-    fileInput.value?.click()
+    // 在移动端，尝试使用 showOpenFilePicker API
+    if (window.showOpenFilePicker) {
+      window.showOpenFilePicker({
+        multiple: true,
+        types: [{
+          description: 'Images',
+          accept: {
+            'image/*': ['.jpg', '.jpeg', '.png', '.gif']
+          }
+        }]
+      }).then(async (handles) => {
+        const files = await Promise.all(
+          handles.map(handle => handle.getFile())
+        )
+        processFiles(files)
+      }).catch(() => {
+        // 如果不支持新 API，回退到传统方式
+        fileInput.value?.click()
+      })
+    } else {
+      fileInput.value?.click()
+    }
   }
 }
 
@@ -628,5 +652,9 @@ const setCover = (index) => {
 .is-disabled {
   pointer-events: none;
   opacity: 0.7;
+}
+
+.select-btn {
+  margin-top: 16px;
 }
 </style> 
