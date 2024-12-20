@@ -2,13 +2,7 @@ import api from './index'
 
 export const imageApi = {
   // 上传图片
-  uploadImages(files, categoryId) {
-    const formData = new FormData()
-    files.forEach(file => {
-      formData.append('images', file)
-    })
-    formData.append('categoryId', categoryId)
-    
+  uploadImages(formData) {
     return api.post('/images/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
@@ -26,5 +20,10 @@ export const imageApi = {
     return api.get('/images/covers', {
       params: { page, pageSize }
     })
+  },
+
+  // 删除图片组
+  deleteImage(id) {
+    return api.delete(`/images/${id}`)
   }
 } 

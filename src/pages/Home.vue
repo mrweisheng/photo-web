@@ -14,13 +14,24 @@
       
       <div class="stat-card">
         <div class="stat-header">
+          <h3>总组数</h3>
+          <div class="icon primary">
+            <i class="fas fa-layer-group"></i>
+          </div>
+        </div>
+        <div class="stat-value">{{ stats.totalGroups || 0 }}</div>
+        <div class="stat-label">上传的图片组数</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-header">
           <h3>分类数</h3>
           <div class="icon success">
             <i class="fas fa-folder"></i>
           </div>
         </div>
         <div class="stat-value">{{ stats.totalCategories || 0 }}</div>
-        <div class="stat-label">创建的分类总数</div>
+        <div class="stat-label">创建的分类��数</div>
       </div>
       
       <div class="stat-card">
@@ -50,7 +61,16 @@
             <div class="image-info">
               <span class="category-name">{{ image.category_name }}</span>
               <div class="upload-meta">
-                <span class="image-count">{{ image.image_count }}张图片</span>
+                <div class="meta-left">
+                  <span class="image-count">{{ image.image_count }}张图片</span>
+                  <button 
+                    class="delete-btn"
+                    @click="handleDelete(image.id)"
+                    title="删除"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
                 <span class="upload-time">{{ formatDate(image.uploaded_at) }}</span>
               </div>
             </div>
@@ -68,6 +88,7 @@
 import { ref, onMounted } from 'vue'
 import { useStatsStore } from '../store/stats'
 import { imageApi } from '../api/image'
+import { ElMessageBox, ElMessage } from 'element-plus'
 
 const statsStore = useStatsStore()
 const stats = ref({
@@ -104,6 +125,33 @@ const formatDate = (date) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+// 删除图片组
+const handleDelete = async (id) => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要删除这组图片吗？删除后不可恢复。',
+      '删除确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    await imageApi.deleteImage(id)
+    ElMessage.success('删除成功')
+    
+    // 重新获取数据
+    await fetchStats()
+    await fetchRecentImages()
+    
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '删除失败')
+    }
+  }
 }
 
 onMounted(() => {
@@ -281,6 +329,29 @@ onMounted(() => {
   
   .chart-container {
     padding: 16px;
+  }
+}
+
+.meta-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s;
+  
+  &:hover {
+    color: var(--danger-color);
+  }
+  
+  i {
+    font-size: 14px;
   }
 }
 </style> 

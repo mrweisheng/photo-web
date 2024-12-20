@@ -37,20 +37,42 @@
       <div v-if="previewFiles.length" class="preview-area">
         <el-scrollbar height="300px">
           <div class="preview-grid">
-            <div v-for="(file, index) in previewFiles" :key="index" class="preview-item">
+            <div 
+              v-for="(file, index) in previewFiles" 
+              :key="index" 
+              class="preview-item"
+              :class="{ 'is-cover': coverIndex === index }"
+            >
               <div class="preview-image">
                 <img :src="file.url" :alt="file.name">
                 <div class="preview-overlay">
-                  <button class="remove-btn" @click.stop="removeFile(index)">
-                    <i class="fas fa-trash"></i>
-                  </button>
+                  <div class="preview-actions">
+                    <button 
+                      class="action-btn set-cover"
+                      v-if="coverIndex !== index"
+                      @click.stop="setCover(index)"
+                      title="设为封面"
+                    >
+                      <i class="fas fa-star"></i>
+                    </button>
+                    <button 
+                      class="action-btn remove"
+                      @click.stop="removeFile(index)"
+                      title="删除"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
               <div class="preview-info">
                 <el-tooltip :content="file.name" placement="bottom">
                   <span class="file-name">{{ file.name }}</span>
                 </el-tooltip>
-                <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                <div class="file-meta">
+                  <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                  <span v-if="coverIndex === index" class="cover-badge">封面</span>
+                </div>
               </div>
             </div>
           </div>
@@ -124,6 +146,7 @@ const previewFiles = ref([])
 const showProgress = ref(false)
 const uploadProgress = ref(0)
 const uploadStatus = ref('')
+const coverIndex = ref(0) // 默认第一张为封面
 
 // 计算进度文本
 const progressText = computed(() => {
@@ -169,6 +192,11 @@ const processFiles = (files) => {
     size: file.size,
     url: URL.createObjectURL(file)
   }))
+  
+  // 如果当前封面索引超出范围，重置为0
+  if (coverIndex.value >= files.length) {
+    coverIndex.value = 0
+  }
 }
 
 // 移除文件
@@ -176,6 +204,15 @@ const removeFile = (index) => {
   URL.revokeObjectURL(previewFiles.value[index].url)
   previewFiles.value.splice(index, 1)
   selectedFiles.value = selectedFiles.value.filter((_, i) => i !== index)
+  
+  // 如果删除的是封面，重置封面索引
+  if (index === coverIndex.value) {
+    coverIndex.value = 0
+  }
+  // 如果删除的索引小于封面索引，封面索引需要减1
+  else if (index < coverIndex.value) {
+    coverIndex.value--
+  }
 }
 
 // 清空文件
@@ -224,21 +261,25 @@ const handleUpload = async () => {
 
   try {
     isUploading.value = true
-    showProgress.value = true
-    uploadStatus.value = ''
     
-    // 模拟上传进度
-    const timer = setInterval(() => {
-      if (uploadProgress.value < 90) {
-        uploadProgress.value += 10
-      }
-    }, 300)
+    // 构建 FormData - 修改添加顺序
+    const formData = new FormData()
+    // 先添加必要的字段
+    formData.append('categoryId', selectedCategory.value)
+    formData.append('coverIndex', coverIndex.value)
+    // 再添加文件
+    selectedFiles.value.forEach(file => {
+      formData.append('images', file)
+    })
 
-    await uploadStore.uploadImages(selectedFiles.value, selectedCategory.value)
-    
-    clearInterval(timer)
-    uploadProgress.value = 100
-    uploadStatus.value = 'success'
+    // 打印检查 FormData 内容
+    const formDataObj = {}
+    formData.forEach((value, key) => {
+      formDataObj[key] = value
+    })
+    console.log('FormData before upload:', formDataObj)
+
+    await uploadStore.uploadImages(formData)
     
     ElMessage.success('上传成功')
     
@@ -248,16 +289,9 @@ const handleUpload = async () => {
     })
     previewFiles.value = []
     selectedFiles.value = []
-    
-    // 延迟关闭进度弹窗
-    setTimeout(() => {
-      showProgress.value = false
-      uploadProgress.value = 0
-      uploadStatus.value = ''
-    }, 1500)
+    coverIndex.value = 0
 
   } catch (error) {
-    uploadStatus.value = 'exception'
     ElMessage.error(error.message || '上传失败')
   } finally {
     isUploading.value = false
@@ -269,6 +303,11 @@ const triggerFileInput = () => {
   if (!isUploading.value) {
     fileInput.value?.click()
   }
+}
+
+// 设置封面
+const setCover = (index) => {
+  coverIndex.value = index
 }
 </script>
 
@@ -482,6 +521,61 @@ const triggerFileInput = () => {
       color: $text-secondary;
     }
   }
+  
+  &.is-cover {
+    border: 2px solid var(--primary-color);
+    
+    .preview-info {
+      background: var(--primary-color-light);
+    }
+    
+    .cover-badge {
+      background: var(--primary-color);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  }
+}
+
+.preview-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
+  }
+  
+  &.set-cover {
+    &:hover {
+      background: var(--primary-color);
+    }
+  }
+  
+  &.remove {
+    &:hover {
+      background: var(--danger-color);
+    }
+  }
+}
+
+.file-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
 }
 
 .remove-btn {

@@ -11,9 +11,15 @@ export const useUploadStore = defineStore('upload', {
   }),
 
   actions: {
-    async uploadImages(files, categoryId) {
+    async uploadImages(formData) {
       try {
-        const { data } = await imageApi.uploadImages(files, categoryId)
+        const formDataObj = {}
+        formData.forEach((value, key) => {
+          formDataObj[key] = value
+        })
+        console.log('FormData in store:', formDataObj)
+
+        const { data } = await imageApi.uploadImages(formData)
         return data
       } catch (err) {
         throw err

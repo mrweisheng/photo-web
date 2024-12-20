@@ -5,6 +5,7 @@ import api from '../api'
 export const useStatsStore = defineStore('stats', () => {
   const stats = ref({
     totalImages: 0,
+    totalGroups: 0,
     totalCategories: 0,
     monthlyUploads: 0
   })
@@ -16,6 +17,7 @@ export const useStatsStore = defineStore('stats', () => {
       if (response.success) {
         stats.value = {
           totalImages: response.data.total_images,
+          totalGroups: response.data.total_groups,
           totalCategories: response.data.total_categories,
           monthlyUploads: response.data.monthly_uploads
         }
