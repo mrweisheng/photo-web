@@ -1,0 +1,62 @@
+:root {
+  // Light theme (default)
+  --primary-color: #409eff;
+  --primary-color-dark: #337ecc;
+  --danger-color: #f56c6c;
+  --success-color: #67c23a;
+  --success-color-dark: #529b2e;
+  --warning-color: #e6a23c;
+  --warning-color-dark: #b88230;
+  
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  
+  --border-color: #dcdfe6;
+  --background-color: #f5f7fa;
+  --component-background: #ffffff;
+  
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --primary-color: #409eff;
+  --primary-color-dark: #337ecc;
+  --danger-color: #f56c6c;
+  --success-color: #67c23a;
+  --success-color-dark: #529b2e;
+  --warning-color: #e6a23c;
+  --warning-color-dark: #b88230;
+  
+  --text-primary: #ffffff;
+  --text-regular: #e0e0e0;
+  --text-secondary: #909399;
+  
+  --border-color: #4c4d4f;
+  --background-color: #141414;
+  --component-background: #1f1f1f;
+  
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+// 导出 SCSS 变量供组件使用
+$primary-color: var(--primary-color);
+$primary-color-dark: var(--primary-color-dark);
+$danger-color: var(--danger-color);
+$success-color: var(--success-color);
+$warning-color: var(--warning-color);
+
+$text-primary: var(--text-primary);
+$text-regular: var(--text-regular);
+$text-secondary: var(--text-secondary);
+
+$border-color: var(--border-color);
+$background-color: var(--background-color);
+$component-background: var(--component-background);
+
+$shadow-color: var(--shadow-color);
+
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;

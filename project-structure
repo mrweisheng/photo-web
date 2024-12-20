@@ -1,0 +1,26 @@
+src/
+├── assets/
+│   ├── styles/
+│   │   ├── main.scss
+│   │   └── variables.scss
+├── components/
+│   ├── common/
+│   │   ├── Modal.vue
+│   │   ├── ProgressBar.vue
+│   │   └── Sidebar.vue
+│   └── upload/
+│       ├── CategorySelector.vue
+│       └── UploadPreview.vue
+├── layouts/
+│   └── MainLayout.vue
+├── pages/
+│   ├── Home.vue
+│   ├── CategoryManager.vue
+│   ├── UploadPage.vue
+│   └── NotFound.vue
+├── router/
+│   └── index.js
+├── store/
+│   └── index.js
+└── utils/
+    └── validators.js 
